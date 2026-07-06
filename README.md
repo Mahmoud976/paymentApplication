@@ -133,6 +133,12 @@ To guarantee the reliability of the system and ensure strict boundary configurat
 2. Open `Project1.sln` inside **Microsoft Visual Studio**.
 3. Press `Ctrl + F5` or click **Local Windows Debugger** to compile and launch the interactive CLI environment.
 
+---
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## Author
 **Mahmoud Saleh**
