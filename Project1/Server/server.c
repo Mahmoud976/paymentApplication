@@ -15,8 +15,9 @@
 uint8_t nameC[24]={'0'};
 uint8_t panC[20]={'0'};
 uint8_t  exC[6]={'0'};
-
-char state[7]={'0'};
+uint32_t beforbalance = 0;
+uint32_t afterbalance = 0;
+uint8_t state[7]={'0'};
 
 FILE* file = NULL;
 FILE* file1 = NULL;
@@ -70,7 +71,10 @@ int searchInCard(char ptr[], char n)
             for (int i = 0; i < 12; i++)
             {
                 fgets(arr, 80, file);
+               // printf("%s\n", arr);
+                //printf("%s\n", nameC);
                 memcpy(nameC, (arr + 5), 23);
+                //printf("namec:%s\n", nameC);
                 removeSpacesFromStr(nameC);
                 removeSpacesFromStr(ptr);
                 if (!(memcmp(ptr, nameC, strlen(ptr))))
@@ -134,7 +138,9 @@ int searchInTransaction(char ptr[], float amaount, char n)
         for (int i = 0; i < 12; i++)
         {
             fgets(arr, 80, file);
-            memcpy(panC, (arr +22), 19);
+         //   printf("%s", arr);
+        
+            memcpy(panC, (arr)+22, 19);
             removeSpacesFromStr(panC);
             if (!(memcmp(ptr, panC, strlen(ptr))))
             {
@@ -144,8 +150,14 @@ int searchInTransaction(char ptr[], float amaount, char n)
                 {
                     char rr[11]={'0'};
                     memcpy(rr, arr, 10);
+                    
+                  //  printf("%s\n", arr);
+                   // printf("%s\n", rr);
                     removeSpacesFromStr(rr);
-                    balance = atoi(rr);
+                   // printf("%s\n", rr);
+                    balance = atof(rr);
+
+                   // printf("%f\n", balance);
                     if (balance > amaount)
                     {
                         fclose(file);
@@ -165,7 +177,7 @@ int searchInTransaction(char ptr[], float amaount, char n)
         }
         fclose(file);
     }
-   // printf("can't found this user");
+   //printf("can't found this user");
 }
 void update_balance(char ptr[], float amaount)
 {
@@ -188,7 +200,9 @@ void update_balance(char ptr[], float amaount)
                     memcpy(rr, arr, 10);
                     removeSpacesFromStr(rr);
                     balance = atoi(rr);
+                    afterbalance = balance;
                     balance -= amaount;
+                    beforbalance = balance;
                     int balan = (int)balance;
                     char z[80]={'\0'};
                     intToStr(balan, z, 9);
@@ -239,7 +253,7 @@ int ren()
 EN_serverError_t isValidAccount(ST_cardData_t* cardData,ST_accountsDB_t* accountRefrence)
 {
     //printf("fetch primaryAccountNumber in card database\n");
-    int ret= searchInCard(cardData->primaryAccountNumber, 'p');
+    int ret= searchInCard(cardData->primaryAccountNumber,'p');
     if (ret)return SERVER_OK;
 
         return ACCOUNT_NOT_FOUND;
@@ -260,14 +274,14 @@ EN_serverError_t isAmountAvailable(ST_terminalData_t* termData, ST_cardData_t* c
    
    // printf("is amount < balance \n");
     int ret = searchInTransaction(cardData->primaryAccountNumber,
-        termData->transAmount, 'p');
+        termData->transAmount,'p');
 
     if (ret) return SERVER_OK;
     return LOW_BALANCE;
 }
 EN_serverError_t saveTransaction(ST_transaction_t* transData)
 {
-    
+
 
     //card
     memcpy(transData->cardHolderData.cardHolderName, TestC.cardHolderName, 24);
@@ -279,18 +293,18 @@ EN_serverError_t saveTransaction(ST_transaction_t* transData)
     memcpy(transData->terminalData.transactionDate, TestT.transactionDate, 10);
     transData->terminalData.transAmount = TestT.transAmount;
     //server
-    char stat[8] = { '0' };
-    int ret = isBlockedAccount(&TestT, &TestC);
-    if (ret == 5)
-    {
-        transData->transState = DECLINED_STOLEN_CARD;  
-    }
+    if (isBlockedAccount(&TestT, &TestC) == BLOCKED_ACCOUNT){
+       // printf("gowa");
+        transData->transState = DECLINED_STOLEN_CARD;
+}
     else
-        
-    
     transData->transactionSequenceNumber++;
+   
     return SERVER_OK;
 }
+
+
+
 EN_transState_t recieveTransactionData(ST_transaction_t* transData)
 {
     //printf("recieveTransactionData\n");
@@ -311,7 +325,7 @@ EN_transState_t recieveTransactionData(ST_transaction_t* transData)
     transData->terminalData.maxTransAmount = TestT.maxTransAmount;
 
     if (transData->terminalData.transAmount > transData->terminalData.maxTransAmount) {
-        printf("money not enof\n");
+       // printf("money not enof\n");
         return DECLINED_INSUFFECIENT_FUND;
     }
 
@@ -321,7 +335,8 @@ EN_transState_t recieveTransactionData(ST_transaction_t* transData)
         return DECLINED_STOLEN_CARD;
     }
 
-    if (saveTransaction(&TestS) != SERVER_OK) {
+    saveTransaction(&TestS);
+    if  (TestS.transState == DECLINED_STOLEN_CARD) {
         // printf("can't save\n");
         return INTERNAL_SERVER_ERROR;
     }
@@ -329,16 +344,17 @@ EN_transState_t recieveTransactionData(ST_transaction_t* transData)
     update_balance(transData->cardHolderData.primaryAccountNumber, TestT.transAmount);
     if (!rem())
     {printf("can't save this transaction\n");
-    exit(1);
+    //exit(1);
      }
     
     if (!ren())
     {
         printf("can't save this transaction\n");
-        exit(1);
+       // exit(1);
     }
 
-    printf("done\n");
+   // printf("done\n");
+    printf("your balance is:%d\n", beforbalance);
     return APPROVED;
 }
 
@@ -356,9 +372,9 @@ void isValidAccountTest(void)
 void recieveTransactionDataTest(void) 
 {
     uint8_t ActualResult, Expectedresult;
-    printf("please enter your recieveTransaction:");
+  //  printf("please enter your recieveTransaction:");
     ActualResult= recieveTransactionData(&TestS);
-    printf("Expected Result:");scanf("\n%c", &Expectedresult);
+    printf("Expected Result:");fseek(stdin, 0, SEEK_END);scanf("\n%c", &Expectedresult);
     printf("Actual Result  :%d\n", ActualResult);
 }
 void isBlockedAccountTest(void) 
