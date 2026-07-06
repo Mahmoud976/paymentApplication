@@ -1,5 +1,9 @@
 ﻿# 💳 Payment Application (Embedded Systems C Project)
 
+[![Release](https://img.shields.io/github/v/release/Mahmoud976/STM32-Smart-Car-Parking-System)](https://github.com/Mahmoud976/paymentApplication/releases/tag/v1.0.0)
+
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A highly structured, modular **C-based Payment System** simulating a real-world credit card transaction environment. This project demonstrates strict adherence to industrial C-programming standards, defensive programming, structural modularity, and persistent file-based data handling crucial for **Embedded Systems** and automotive software development.
 
 ---
