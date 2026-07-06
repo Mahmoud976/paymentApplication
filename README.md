@@ -99,3 +99,38 @@ The application implements standard financial check routines across three isolat
    ```
 2. Open `Project1.sln` inside **Microsoft Visual Studio**.
 3. Press `Ctrl + F5` or click **Local Windows Debugger** to compile and launch the interactive CLI environment.
+---
+
+## 🧪 Comprehensive Testing Matrix (Verification & Validation)
+
+To guarantee the reliability of the system and ensure strict boundary configurations, the following test matrix was executed covering both **Happy Paths** (Valid inputs) and **Edge Cases** (Invalid inputs):
+
+### 1. Card Module Tests
+
+| Test Case ID | Scenario / Input | Expected Status | Actual Result | Pass/Fail |
+| :--- | :--- | :--- | :--- | :---: |
+| **TC_CARD_01** | Valid Name, PAN (16 digits), Expiry (05/28) | `CARD_OK` | `CARD_OK` | ✅ Pass |
+| **TC_CARD_02** | Name less than 20 characters (e.g., "John Doe") | `WRONG_NAME` | `WRONG_NAME` | ✅ Pass |
+| **TC_CARD_03** | PAN with invalid format/length (e.g., "123") | `WRONG_PAN` | `WRONG_PAN` | ✅ Pass |
+| **TC_CARD_04** | Invalid Expiry Date Format (e.g., "12/2026") | `WRONG_EXP_DATE` | `WRONG_EXP_DATE` | ✅ Pass |
+
+### 2. Terminal Module Tests
+
+| Test Case ID | Scenario / Input | Expected Status | Actual Result | Pass/Fail |
+| :--- | :--- | :--- | :--- | :---: |
+| **TC_TERM_01** | Valid amount within limits and unexpired card | `TERMINAL_OK` | `TERMINAL_OK` | ✅ Pass |
+| **TC_TERM_02** | Expired Card (Card: 03/22 vs Terminal: 08/25) | `EXPIRED_CARD` | `EXPIRED_CARD` | ✅ Pass |
+| **TC_TERM_03** | Invalid Transaction Amount (e.g., `<= 0`) | `INVALID_AMOUNT` | `INVALID_AMOUNT` | ✅ Pass |
+| **TC_TERM_04** | Amount exceeds Max Limit (Amount: 15k, Limit: 10k) | `EXCEED_MAX_AMOUNT` | `EXCEED_MAX_AMOUNT` | ✅ Pass |
+
+### 3. Server Module Tests
+
+| Test Case ID | Scenario / Input | Expected Status | Actual Result | Pass/Fail |
+| :--- | :--- | :--- | :--- | :---: |
+| **TC_SERV_01** | Valid transaction, PAN found, sufficient balance | `SERVER_OK` (APPROVED) | `SERVER_OK` | ✅ Pass |
+| **TC_SERV_02** | PAN not registered in Server Database | `ACCOUNT_NOT_FOUND` | `ACCOUNT_NOT_FOUND` | ✅ Pass |
+| **TC_SERV_03** | PAN found but balance is insufficient | `LOW_BALANCE` | `LOW_BALANCE` | ✅ Pass |
+| **TC_SERV_04** | Database Full (Simulating maximum transaction logs) | `SAVING_FAILED` | `SAVING_FAILED` | ✅ Pass |
+
+---
+
